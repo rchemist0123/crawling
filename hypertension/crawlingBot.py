@@ -21,13 +21,14 @@ class WindowClass(QMainWindow, form_class):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.setWindowTitle('Crawling Bot')
 
         self.addKeywordBtn.clicked.connect(self.addKeyword)
         self.search.clicked.connect(self.intialize)
         # self.radioBtnAnd.clicked.connect(self.radioFunction)
         # self.radioBtnOr.clicked.connect(self.radioFunction)
-        self.progressBar.valueChanged.connect(self.printValue)
-    
+        # self.progressBar.valueChanged.connect(self.article_search)
+        self.progressBar.setValue(0)
     # def radioFunction(self):
         # if self.radioBtnAnd.isChecked(): print(self.radioBtnAnd.text())
         # else: print(self.radioBtnOr.text())
@@ -48,8 +49,8 @@ class WindowClass(QMainWindow, form_class):
         self.keywordInput.clear()
 
     def printValue(self):
-        print(self.progressBar.value()[0])
-
+        pass
+    
     @staticmethod
     def article_search(key):
         driver = webdriver.Chrome("C:/chromedriver")  #브라우저 켜기
@@ -82,10 +83,13 @@ class WindowClass(QMainWindow, form_class):
         titles = driver.find_elements_by_css_selector('a.docsum-title')
         cnt = 0
         result = int(driver.find_element_by_css_selector('div.results-amount > span.value').text)
-        for _ in range(result):
+
+        form_class.progressBar.setRange(0,100)
+
+        for i in range(result):
             titles = driver.find_elements_by_css_selector('a.docsum-title')
             num = driver.find_element_by_css_selector('#search-results > section > div.search-results-chunks > div > article:nth-child(2) > div.item-selector-wrap.selectors-and-actions.first-selector > label > span').text
-            
+            form_class.progressBar.setValue(round(i/result*100,1))
             # print("lenght: ", len(titles))
             # print("num:", num)
             if len(titles) > 10:
@@ -153,17 +157,25 @@ class WindowClass(QMainWindow, form_class):
             if len(title_arr) == result:
                 df = pd.DataFrame(np.c_[title_arr, year_arr, journal_arr, author_arr, link_arr, abstract_arr], columns=['title','year', 'journal','authors','links','abstract'])
                 # df.to_csv(outfile, encoding='utf8')
-                print('Done!')
-                break
+                
+                return "done"
 
     def intialize(self):
         a=self.queryBox.toPlainText()
         b=" ".join(a.split("\n"))
-        self.article_search(b)
-        self.queryBox.clear()
+        x= self.article_search(b)
+        if x == 'done':
+            msg = QMessageBox()
+            msg.setWindowTitle("CrawlingBot")
+            msg.setText('Crawling Complete!')
+            msg.setStandardButtons(QMessageBox.Ok)
+            result = msg.exec_()
+            if result == QMessageBox.Ok:
+                pass        
+            self.queryBox.clear()
 
 
-
+   
 if __name__ == "__main__" :
     #QApplication : 프로그램을 실행시켜주는 클래스
     app = QApplication(sys.argv) 
