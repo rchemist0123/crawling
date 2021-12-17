@@ -12,7 +12,7 @@ import time
 import pandas as pd
 import numpy as np
 import logging
-
+from subwindow import SubWindow
 
 form_class = uic.loadUiType('crawlingbot.ui')[0]
 
@@ -31,14 +31,14 @@ class WindowClass(QMainWindow, form_class):
         # print(self.keywordInput.text())
         if self.queryBox.toPlainText() == "":
             a = self.keywordInput.text() + "["+self.keywordRange.currentText() +"]"
-            self.queryBox.append(a)
+            self.queryBox.appendPlainText(a)
         else:
             if self.radioBtnAnd.isChecked():
                 a = self.radioBtnAnd.text() + " " +self.keywordInput.text() + "["+self.keywordRange.currentText() +"]" 
-                self.queryBox.append(a)
+                self.queryBox.appendPlainText(a)
             else:
                 a = self.radioBtnOr.text() + " "+self.keywordInput.text() + "["+self.keywordRange.currentText() +"]" 
-                self.queryBox.append(a)
+                self.queryBox.appendPlainText(a)
         self.keywordInput.clear()
 
     def printValue(self):
@@ -159,13 +159,16 @@ class WindowClass(QMainWindow, form_class):
                 return "done"
 
     def intialize(self):
-        a=self.queryBox.toPlainText()
+        a= self.queryBox.toPlainText()
         b=" ".join(a.split("\n"))
         x= self.article_search(b)
+        win = SubWindow()
+        r = win.showModal()
+
         if x == 'done':
             msg = QMessageBox()
             msg.setWindowTitle("CrawlingBot")
-            msg.setText('Crawling Complete!')
+            msg.setText('Crawling이 완료되었습니다!')
             msg.setStandardButtons(QMessageBox.Ok)
             result = msg.exec_()
             if result == QMessageBox.Ok:
