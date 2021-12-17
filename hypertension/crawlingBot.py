@@ -25,13 +25,7 @@ class WindowClass(QMainWindow, form_class):
 
         self.addKeywordBtn.clicked.connect(self.addKeyword)
         self.search.clicked.connect(self.intialize)
-        # self.radioBtnAnd.clicked.connect(self.radioFunction)
-        # self.radioBtnOr.clicked.connect(self.radioFunction)
-        # self.progressBar.valueChanged.connect(self.article_search)
         self.progressBar.setValue(0)
-    # def radioFunction(self):
-        # if self.radioBtnAnd.isChecked(): print(self.radioBtnAnd.text())
-        # else: print(self.radioBtnOr.text())
 
     def addKeyword(self):
         # print(self.keywordInput.text())
@@ -45,14 +39,13 @@ class WindowClass(QMainWindow, form_class):
             else:
                 a = self.radioBtnOr.text() + " "+self.keywordInput.text() + "["+self.keywordRange.currentText() +"]" 
                 self.queryBox.append(a)
-        
         self.keywordInput.clear()
 
     def printValue(self):
         pass
+
     
-    @staticmethod
-    def article_search(key):
+    def article_search(self, key):
         driver = webdriver.Chrome("C:/chromedriver")  #브라우저 켜기
         driver.get('https://pubmed.ncbi.nlm.nih.gov/') 
         toAdvance = driver.find_element_by_css_selector('a.search-input-link')
@@ -82,14 +75,19 @@ class WindowClass(QMainWindow, form_class):
 
         titles = driver.find_elements_by_css_selector('a.docsum-title')
         cnt = 0
-        result = int(driver.find_element_by_css_selector('div.results-amount > span.value').text)
+        resultNum = driver.find_element_by_css_selector('div.results-amount > span.value').text
+        if "," in resultNum:
+            result = int(resultNum.replace(",",""))
+        else:
+            result = int(resultNum)
 
-        form_class.progressBar.setRange(0,100)
+        # print("progressbar:",self.progressBar.value())
+        self.progressBar.setRange(0,100)
 
         for i in range(result):
             titles = driver.find_elements_by_css_selector('a.docsum-title')
             num = driver.find_element_by_css_selector('#search-results > section > div.search-results-chunks > div > article:nth-child(2) > div.item-selector-wrap.selectors-and-actions.first-selector > label > span').text
-            form_class.progressBar.setValue(round(i/result*100,1))
+            self.progressBar.setValue(round(i/result*100,1))
             # print("lenght: ", len(titles))
             # print("num:", num)
             if len(titles) > 10:
